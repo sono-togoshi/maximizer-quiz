@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>満足者（サティスファイサー）度 診断テスト</title>
+    <!-- Tailwind CSS -->
+    <script src="https://tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cloudflare.com">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+        .scale-option input[type="radio"] {
+            display: none;
+        }
+        .scale-option label {
+            transition: all 0.2s ease-in-out;
+        }
+        .scale-option input[type="radio"]:checked + label {
+            transform: scale(1.08);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            font-weight: bold;
+        }
+        .scale-1 input[type="radio"]:checked + label { background-color: #e11d48; color: white; border-color: #e11d48; }
+        .scale-2 input[type="radio"]:checked + label { background-color: #f43f5e; color: white; border-color: #f43f5e; }
+        .scale-3 input[type="radio"]:checked + label { background-color: #fb7185; color: white; border-color: #fb7185; }
+        .scale-4 input[type="radio"]:checked + label { background-color: #64748b; color: white; border-color: #64748b; }
+        .scale-5 input[type="radio"]:checked + label { background-color: #34d399; color: white; border-color: #34d399; }
+        .scale-6 input[type="radio"]:checked + label { background-color: #10b981; color: white; border-color: #10b981; }
+        .scale-7 input[type="radio"]:checked + label { background-color: #059669; color: white; border-color: #059669; }
+
+        @keyframes pulse-border {
+            0%, 100% { border-color: #f87171; }
+            50% { border-color: #ef4444; }
+        }
+        .unanswered-error {
+            border: 2px solid #ef4444 !important;
+            animation: pulse-border 1.5s infinite;
+            background-color: #fef2f2;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-16">
+
+    <!-- ヘッダー -->
+    <header class="bg-emerald-600 text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-face-smile text-2xl text-emerald-200"></i>
+                <h1 class="text-xl md:text-2xl font-bold tracking-tight">サティスファイサー度 診断</h1>
+            </div>
+            <div class="flex items-center space-x-2 text-sm bg-emerald-700/60 px-3 py-1.5 rounded-full">
+                <span>進捗:</span>
+                <span id="answeredCount" class="font-bold text-yellow-300">0</span> / 10
+            </div>
+        </div>
+        <div class="w-full bg-emerald-900/30 h-2">
+            <div id="progressBar" class="bg-yellow-400 h-2 transition-all duration-300 w-0"></div>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-4 mt-8">
+
+        <!-- イントロダクション -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 mb-8">
+            <h2 class="text-2xl font-bold text-slate-800 mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-circle-info text-emerald-500"></i>
+                満足者（サティスファイサー）診断とは？
+            </h2>
+            <p class="text-slate-600 leading-relaxed mb-4">
+                ノーベル経済学賞を受賞したハーバート・サイモンの「限定合理性理論」に基づく診断です。<br>
+                最高を追い求める人（マキシマイザー）とは対照的に、<b>「自分の中の基準を超えていれば、それ以上の時間やエネルギーを使わずに納得できる生き方」</b>がどれくらいできているかを測定します。
+            </p>
+            <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-lg text-sm text-emerald-900">
+                <p class="font-bold mb-1">💡 回答方法</p>
+                <p>各質問に対し、「<b>1：全く当てはまらない</b>」〜「<b>7：完全に当てはまる</b>」の7段階から、最も近いものを選択してください。</p>
+            </div>
+        </section>
+
+        <!-- 質問フォーム -->
+        <form id="quizForm" onsubmit="return false;">
+            <div class="space-y-6">
+
+                <!-- Q1 -->
+                <div id="qCard_1" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 transition-all duration-300">
+                    <div class="flex items-start gap-3 mb-4">
+                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 font-bold text-sm shrink-0 mt-0.5">Q1</span>
+                        <p class="text-slate-800 font-medium leading-relaxed">買い物をするとき、事前に決めていた条件（予算や機能）を満たすものが見つかれば、他の選択肢をそれ以上探さずに購入を決める。</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-2 md:gap-4 mt-6 bg-slate-50 p-4 rounded-xl">
+                        <span class="text-xs font-bold text-rose-500">全く当てはまらない</span>
+                        <div class="flex justify-between w-full sm:w-auto gap-1 md:gap-3">
+                            <div class="scale-option scale-1"><input type="radio" id="q_1_1" name="q_1" value="1" onchange="updateProgress()"><label for="q_1_1" class="block w-10 h-10 md:w-11 md:h-11 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center cursor-pointer text-slate-500 text-sm">1</label></div>
+                            <div class="scale-option scale-2"><input type="radio" id="q_1_2" name="q_1" value="2" onchange="updateProgress()"><label for="q_1_2" class="block w-10 h-10 md:w-11 md:h-11 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center cursor-pointer text-slate-500 text-sm">2</label></div>
+                            <div class="scale-option scale-3"><input type="radio" id="q_1_3" name="q_1" value="3" onchange="updateProgress()"><label for="q_1_3" class="block w-10 h-10 md:w-11 md:h-11 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center cursor-pointer text-slate-500 text-sm">3</label></div>
+                            <div class="scale-option scale-4"><input type="radio" id="q_1_4" name="q_1" value="4" onchange="updateProgress()"><label for="q_1_4" class="block w-10 h-10 md:w-11 md:h-11 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center cursor-pointer text-slate-500 text-sm">4</label></div>
+                            <div class="scale-option scale-5"><input type="radio" id="q_1_5" name="q_1" value="5" onchange="updateProgress()"><label for="q_1_5" class="block w-10 h-10 md:w-11 md:h-11 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center cursor-pointer text-slate-500 text-sm">5</label></div>
+                            <div class="scale-option scale-6"><input type="radio" id="q_1_6" name="q_1" value="6" onchange="updateProgress()"><label for="q_1_6" class="block w-10 h-10 md:w-11 md:h-11 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center cursor-pointer text-slate-500 text-sm">6</label></div>
+                            <div class="scale-option scale-7"><input type="radio" id="q_1_7" name="q_1" value="7" onchange="updateProgress()"><label for="q_1_7" class="block w-10 h-10 md:w-11 md:h-11 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center cursor-pointer text-slate-500 text-sm">7</label></div>
+                        </div>
+                        <span class="text-xs font-bold text-emerald-600">完全に当てはまる</span>
+                    </div>
+                </div>
+
+                <!-- Q2 -->
+                <div id="qCard_2" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 transition-all duration-300">
+                    <div class="flex items-start gap-3 mb-4">
+                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 font-bold text-sm shrink-0 mt-0.5">Q2</span>
+                        <p class="text-slate-800 font-medium leading-relaxed">レストランでメニューを選ぶとき、そこそこ美味しそうなものがすぐに見つかれば、すべてのページに目を通さずに注文できる。</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-2 md:gap-4 mt-6 bg-slate-50 p-4 rounded-xl">
+                        <span class="text-xs font-bold text-rose-500">全く当てはまらない</span>
+                        <div class="flex justify-between w-full sm:w-auto gap-1 md:gap-3">
+                            <div class="scale-option scale-1"><input type="radio" id="q_2_1" name="q_2" value="1" onchange="updateProgress()"><label for="q_2_1" class="block w-10 h-10 md:w-11 md:h-11 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center cursor-pointer text-slate-500 text-sm">1</label></div>
+                            <div class="scale-option scale-2"><input type="radio" id="q_2_2" name="q_2" value="2" onchange="updateProgress()"><label for="q_2_2" class="block w-10 h-10 md:w-11 md:h-11 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center cursor-pointer text-slate-500 text-sm">2</label></div>
+                            <div class="scale-option scale-3"><input type="radio" id="q_2_3" name="q_2" value="3" onchange="updateProgress()"><label for="q_2_3" class="block w-10 h-10 md:w-11 md:h-11 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center cursor-pointer text-slate-500 text-sm">3</label></div>
+                            <div class="scale-option scale-4"><input type="radio" id="q_2_4" name="q_2" value="4" onchange="updateProgress()"><label for="q_2_4" class="block w-10 h-10 md:w-11 md:h-11 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center cursor-pointer text-slate-500 text-sm">4</label></div>
+5
+6
+7
+
+完全に当てはまる
+
+Q3
+旅行の計画を立てる際、ホテルや観光地は「そこそこ良さそう」なら早めに予約して、あとは現地で楽しむ方が好きだ。
+
+
+全く当てはまらない
+
+1
+2
+3
+4
+5
+6
+7
+
+完全に当てはまる
+
+Q4
+何かを選んだ後、多少の不満があっても「まあ、こんなもんだろう」とすぐに受け入れ、他と比較して悩むことはない。
+
+
+全く当てはまらない
+
+1
+2
+3
+4
+5
+6
+7
+
+完全に当てはまる
+
+Q5
+仕事や勉強の成果を出すとき、目標ラインや合格点をクリアしていれば、100点満点を目指して細部にこだわり続けることはしない。
+
+
+全く当てはまらない
+
+1
+2
+3
+4
+5
+6
+7
+
+完全に当てはまる
+
+Q6
+ネットで動画や映画を探すとき、最初におすすめされた候補の中に面白そうなものがあれば、迷わずそれを見る。
+
+
+全く当てはまらない
+
+1
+2
+3
+4
+5
+6
+7
+
+完全に当てはまる
+
+Q7
+新しく家電やガジェットを買うとき、レビューや口コミサイトを何時間も巡回して完璧な比較をすることはない。
+
+
+全く当てはまらない
+
+1
+2
+3
+4
+5
+6
+7
+
+完全に当てはまる
+
+Q8
+服や靴を選ぶとき、一目見て自分の好みに合っていれば、他のお店やネットショップに同じようなもっと良いものがないか探し回ることはない。
+
+
+全く当てはまらない
+
+1
+2
+3
+4
+5
+6
+7
+
+完全に当てはまる
+
+Q9
+友人へのプレゼントを選ぶとき、相手が喜んでくれそうな定番や候補がいくつか見つかれば、悩まずスマートに決定できる。
+
+
+全く当てはまらない
+
+1
+2
+3
+4
+5
+6
+7
+
+完全に当てはまる
+
+Q10
+自分の人生や日々の暮らしにおいて、常に「完璧な最高の結果」を追い求めるよりも、「今ある十分な満足」を噛みしめる方が得意だ。
+
+
+全く当てはまらない
+
+1
+2
+3
+4
+5
+6
+7
+
+完全に当てはまる
+
+
+未回答の質問があります。選択を完了させてください。
+
+診断結果を見る
+
+
+診断結果
+
+
+満足者度スコア：
+--
+/ 70 点
+
+10点 (マキシマイザー傾向)
+35点 (バランス型)
+70点 (サティスファイサー)
+
+
+
+
+あなたの選択スタイルの特徴
+
+
+
+
+
+ 心理学のミニ知識
+
+現代社会は選択肢に溢れていますが、心理学者バリー・シュワルツ教授の実験によると、最高にこだわり続ける人（マキシマイザー）よりも、自分の「これくらいで良い」という基準でサクッと決める人（サティスファイサー）の方が、決断後の後悔が少なく、人生の幸福度（ウェルビーイング）が圧倒的に高いことが分かっています。
+
+
+function updateProgress() {
+let answered = 0;
+for (let i = 1; i <= 10; i++) {
+if (document.querySelector(input[name="q_${i}"]:checked)) {
+answered++;
+document.getElementById(qCard_${i}).classList.remove("unanswered-error");
+}
+}
+document.getElementById("answeredCount").textContent = answered;
+const percent = (answered / 10) * 100;
+document.getElementById("progressBar").style.width = percent + "%";
+}
+function calculateResult() {
+let totalScore = 0;
+let firstUnanswered = null;
+const alertBox = document.getElementById("alertBox");
+for (let i = 1; i <= 10; i++) {
+const checkedRadio = document.querySelector(input[name="q_${i}"]:checked);
+if (!checkedRadio) {
+document.getElementById(qCard_${i}).classList.add("unanswered-error");
+if (!firstUnanswered) firstUnanswered = document.getElementById(qCard_${i});
+} else {
+totalScore += parseInt(checkedRadio.value);
+document.getElementById(qCard_${i}).classList.remove("unanswered-error");
+}
+}
+if (firstUnanswered) {
+alertBox.classList.remove("hidden");
+firstUnanswered.scrollIntoView({ behavior: 'smooth', block: 'center' });
+return;
+}
+alertBox.classList.add("hidden");
+const resultArea = document.getElementById("resultArea");
+const resultHeaderBg = document.getElementById("resultHeaderBg");
+const resultTitle = document.getElementById("resultTitle");
+const resultScore = document.getElementById("resultScore");
+const scoreIndicator = document.getElementById("scoreIndicator");
+const resultDescription = document.getElementById("resultDescription");
+resultArea.classList.remove("hidden");
+resultScore.textContent = totalScore;
+const barPercent = ((totalScore - 10) / 60) * 100;
+scoreIndicator.style.width = barPercent + "%";
+if (totalScore >= 52) {
+resultHeaderBg.className = "p-8 text-white text-center relative overflow-hidden bg-emerald-600";
+scoreIndicator.className = "h-full bg-emerald-500 rounded-full transition-all duration-1000";
+resultTitle.textContent = "心の平穏を保てる「スマート満足者」";
+resultDescription.textContent = "あなたは自分軸の「満足基準」が非常にハッキリしている、生粋のサティスファイサーです。\n\n【あなたの特徴】\n物事を選ぶときに「もっと良いものがあるかも」というゴールのない泥沼にハマらず、「これで十分！」と決断できるため、日常のストレスや決断疲れ（ディシジョン・ファティーグ）が非常に少ないのが最大の強みです。\n\n【アドバイス】\n時間とエネルギーの節約がとても上手なので、浮いたリソースを自分の本当に大切な趣味や人間関係、自己投資に回すことができ、人生の幸福度（ウェルビーイング）を高めやすい理想的な状態です。そのままのスタンスを大切にしてください！";
+} else if (totalScore >= 30) {
+resultHeaderBg.className = "p-8 text-white text-center relative overflow-hidden bg-indigo-600";
+scoreIndicator.className = "h-full bg-indigo-500 rounded-full transition-all duration-1000";
+resultTitle.textContent = "要領よく使い分ける「ハイブリッド決断派」";
+resultDescription.textContent = "あなたは状況や重要度に応じて選択のスタンスを賢く切り替えられる、とてもバランスの取れたタイプです。\n\n【あなたの特徴】\n普段のちょっとした買い物や食事は「これでいいや」と直感で済ませる一方、人生の重大な決断（仕事、高い買い物、長期の計画など）ではとことんリサーチして最高を追求する（マキシマイザー傾向）という器用さを持っています。\n\n【アドバイス】\n非常に効率的な生き方ですが、たまに「どうでもいいはずの小さな選択」にまでこだわり始めて時間を浪費してしまうことがあります。「疲れているな」と感じたときは、意識的にすべてをサクッと決めるサティスファイサースイッチを入れてみてください。";
+} else {
+resultHeaderBg.className = "p-8 text-white text-center relative overflow-hidden bg-rose-600";
+scoreIndicator.className = "h-full bg-rose-500 rounded-full transition-all duration-1000";
+resultTitle.textContent = "常にベストを求め続ける「極限の追求者」";
+resultDescription.textContent = "あなたはサティスファイザーの対極にいる、完全な「マキシマイザー（最高追求タイプ）」の傾向が強いです。\n\n【あなたの特徴】\n何を選ぶにも妥協せず、徹底的なリサーチとプロ並みの比較検討を行うため、最終的に得られるものの「客観的な質」は誰よりも高くなります。しかしその反面、「選ばなかった選択肢への未練」や「決断疲れ」を起こしやすいのが特徴です。\n\n【アドバイス】\n現代のネット社会は選択肢が無限にあるため、マキシマイザーのままだと脳のエネルギーが枯渇してしまいます。日常の小さな決断については
+「選択肢をあえて3つに絞る」「5分以内に決める」といった、サティスファイサー的なマイルールを取り入れると、ぐっと生きやすくなりますよ。";
+}
+resultArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}

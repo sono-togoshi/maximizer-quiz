@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>制御焦点テスト（プロモーション vs 予防）</title>
+  <style>
+    :root {
+      --bg-color: #f4f7f6;
+      --card-bg: #ffffff;
+      --primary: #2b6cb0;
+      --primary-hover: #2c5282;
+      --promo-color: #dd6b20;
+      --prev-color: #319795;
+      --text-main: #2d3748;
+      --text-sub: #718096;
+      --border-color: #e2e8f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 20px 12px;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+      background: var(--card-bg);
+      padding: 24px 16px;
+      border-radius: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+
+    header p {
+      font-size: 0.9rem;
+      color: var(--text-sub);
+    }
+
+    .info-box {
+      background: #ebf8ff;
+      border-left: 4px solid var(--primary);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.85rem;
+      margin-top: 12px;
+      text-align: left;
+    }
+
+    .progress-bar {
+      position: sticky;
+      top: 10px;
+      z-index: 10;
+      background: var(--card-bg);
+      padding: 12px 16px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .progress-track {
+      flex: 1;
+      height: 10px;
+      background: var(--border-color);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--primary);
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: var(--primary);
+      white-space: nowrap;
+    }
+
+    .section-label {
+      font-size: 0.95rem;
+      font-weight: bold;
+      color: var(--primary);
+      margin: 24px 0 12px 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .question-card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 20px 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+      border: 1px solid var(--border-color);
+    }
+
+    .question-title {
+      font-weight: bold;
+      font-size: 1rem;
+      margin-bottom: 14px;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    @media (max-width: 480px) {
+      .options-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .option-btn {
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px 8px;
+      font-size: 0.85rem;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+
+    .option-btn:hover {
+      background: #e2e8f0;
+    }
+
+    .option-btn.selected {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+      font-weight: bold;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(43, 108, 176, 0.2);
+      margin-top: 10px;
+      margin-bottom: 40px;
+    }
+
+    .submit-btn:disabled {
+      background: #cbd5e0;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    #result {
+      display: none;
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 24px 20px;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .result-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      background: #ebf8ff;
+      color: var(--primary);
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+    }
+
+    .scores-wrapper {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 16px 0 24px;
+    }
+
+    .score-box {
+      padding: 16px 10px;
+      border-radius: 12px;
+      background: #f7fafc;
+      border: 1px solid var(--border-color);
+    }
+
+    .score-box.promo {
+      border-top: 4px solid var(--promo-color);
+    }
+
+    .score-box.prev {
+      border-top: 4px solid var(--prev-color);
+    }
+
+    .score-box-title {
+      font-size: 0.8rem;
+      color: var(--text-sub);
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .score-box-val {
+      font-size: 1.6rem;
+      font-weight: bold;
+    }
+
+    .score-box.promo .score-box-val { color: var(--promo-color); }
+    .score-box.prev .score-box-val { color: var(--prev-color); }
+
+    .result-title {
+      font-size: 1.25rem;
+      font-weight: bold;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .result-desc {
+      text-align: left;
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: var(--text-main);
+      margin-bottom: 24px;
+    }
+
+    .retry-btn {
+      background: #edf2f7;
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>制御焦点テスト</h1>
+    <p>トリー・ヒギンズの「制御焦点理論（Regulatory Focus Theory）」</p>
+    <div class="info-box">
+      目標に向かうときのモチベーションタイプ（プロモーション焦点 vs プリベンション焦点）を測る10の質問テストです。
+    </div>
+  </header>
+
+  <div class="progress-bar">
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-text" id="progressText">0 / 10</div>
+  </div>
+
+  <form id="quizForm">
+    <div id="questionsContainer"></div>
+    <button type="button" class="submit-btn" id="submitBtn" disabled onclick="calculateScore()">診断結果を見る</button>
+  </form>
+
+  <div id="result">
+    <div class="result-badge">診断結果</div>
+    
+    <div class="scores-wrapper">
+      <div class="score-box promo">
+        <div class="score-box-title">🚀 プロモーション</div>
+        <div class="score-box-val" id="promoScore">0 / 20</div>
+      </div>
+      <div class="score-box prev">
+        <div class="score-box-title">🛡️ プリベンション</div>
+        <div class="score-box-val" id="prevScore">0 / 20</div>
+      </div>
+    </div>
+
+    <div class="result-title" id="typeTitle"></div>
+    <div class="result-desc" id="typeDesc"></div>
+    <button type="button" class="retry-btn" onclick="resetQuiz()">もう一度診断する</button>
+  </div>
+</div>
+
+<script>
+  const questions = [
+    { text: "何かを始めるときは、失敗のリスクよりも「得られるメリットや成長」にワクワクする。", section: "前半：プロモーション傾向" },
+    { text: "理想の自分や、将来叶えたい夢・目標について考えることがよくある。", section: "前半：プロモーション傾向" },
+    { text: "安全で確実な方法よりも、多少リスクがあっても新しいやり方に挑戦したい。", section: "前半：プロモーション傾向" },
+    { text: "周囲から「行動力がある」「前向きだ」と言われることが多い。", section: "前半：プロモーション傾向" },
+    { text: "目標を達成したときの、自分の嬉しそうな姿がありありとイメージできる。", section: "前半：プロモーション傾向" },
+    { text: "仕事や勉強では、大きな成果を出すことより「ミスやトラブルを出さないこと」を優先する。", section: "後半：プリベンション（予防）傾向" },
+    { text: "義務や責任を果たし、周囲からの信頼を裏切らないことが何より大切だと思う。", section: "後半：プリベンション（予防）傾向" },
+    { text: "物事を進めるときは、事前に徹底的な準備やシミュレーション（リスク管理）をする。", section: "後半：プリベンション（予防）傾向" },
+    { text: "スケジュールやルールを破ること、締め切りに遅れることに対して強いストレスを感じる。", section: "後半：プリベンション（予防）傾向" },
+    { text: "「一発逆転の大成功」よりも、「安定した現状を長く維持すること」に魅力を感じる。", section: "後半：プリベンション（予防）傾向" }
+  ];
+
+  const options = [
+    { text: "1: 全く当てはまらない", value: 1 },
+    { text: "2: あまり当てはまらない", value: 2 },
+    { text: "3: ある程度当てはまる", value: 3 },
+    { text: "4: 非常によく当てはまる", value: 4 }
+  ];
+
+  const answers = new Array(questions.length).fill(null);
+
+  function renderQuestions() {
+    const container = document.getElementById("questionsContainer");
+    if (!container) return;
+    container.innerHTML = "";
+
+    let currentSection = "";
+
+    questions.forEach((qObj, qIdx) => {
+      if (qObj.section !== currentSection) {
+        currentSection = qObj.section;
+        const sectionHeader = document.createElement("div");
+        sectionHeader.className = "section-label";
+        sectionHeader.innerText = currentSection;
+        container.appendChild(sectionHeader);
+      }
+
+      const card = document.createElement("div");
+      card.className = "question-card";
+
+      const title = document.createElement("div");
+      title.className = "question-title";
+      title.innerText = `${qIdx + 1}. ${qObj.text}`;
+      card.appendChild(title);
+
+      const grid = document.createElement("div");
+      grid.className = "options-grid";
+
+      options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "option-btn";
+        btn.innerText = opt.text;
+        btn.onclick = () => selectOption(qIdx, opt.value, btn);
+        grid.appendChild(btn);
+      });
+
+      card.appendChild(grid);
+      container.appendChild(card);
+    });
+  }
+
+  function selectOption(qIdx, val, btnElement) {
+    answers[qIdx] = val;
+    
+    const parentCard = btnElement.closest(".question-card");
+    const siblings = parentCard.querySelectorAll(".option-btn");
+    siblings.forEach(b => b.classList.remove("selected"));
+    btnElement.classList.add("selected");
+
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const answeredCount = answers.filter(a => a !== null).length;
+    const fill = document.getElementById("progressFill");
+    const text = document.getElementById("progressText");
+    const submitBtn = document.getElementById("submitBtn");
+
+    const pct = (answeredCount / questions.length) * 100;
+    fill.style.width = pct + "%";
+    text.innerText = `${answeredCount} / ${questions.length}`;
+
+    if (answeredCount === questions.length) {
+      submitBtn.disabled = false;
+    }
+  }
+
+  function calculateScore() {
+    const promoScore = answers.slice(0, 5).reduce((acc, curr) => acc + curr, 0);
+    const prevScore = answers.slice(5, 10).reduce((acc, curr) => acc + curr, 0);
+    
+    document.getElementById("quizForm").style.display = "none";
+    const resultDiv = document.getElementById("result");
+    resultDiv.style.display = "block";
+
+    document.getElementById("promoScore").innerText = `${promoScore} 点`;
+    document.getElementById("prevScore").innerText = `${prevScore} 点`;
+
+    const titleEl = document.getElementById("typeTitle");
+    const descEl = document.getElementById("typeDesc");
+
+    if (promoScore > prevScore) {
+      titleEl.innerText = "🚀 プロモーション（促進）焦点が優位なタイプ";
+      descEl.innerHTML = `
+        <p><strong>特徴：</strong> 「理想の追求」と「獲得」を目指すポジティブチャレンジャー</p>
+        <p><strong>傾向：</strong> 夢やビジョンに向かって突き進むエネルギーを持っています。チャンスを逃さないスピード感がありますが、一方で細かい確認を怠ったり、楽観的すぎて思わぬ落とし穴にハマったりすることも。「得られるリターン」が明確なときに最もモチベーションが上がります。</p>
+      `;
+    } else if (prevScore > promoScore) {
+      titleEl.innerText = "🛡️ プリベンション（予防）焦点が優位なタイプ";
+      descEl.innerHTML = `
+        <p><strong>特徴：</strong> 「義務の遂行」と「リスク回避」を徹底する安全第一の守護神</p>
+        <p><strong>傾向：</strong> 非常に責任感が強く、計画的でミスが少ない確実な仕事ぶりを発揮します。組織やチームに一人いると非常に心強い存在です。一方で、失敗を恐れるあまり新しい挑戦に一歩踏み出せなかったり、変化を嫌う傾向があります。「失うリスク」を避けるときに最も強い集中力を発揮します。</p>
+      `;
+    } else {
+      titleEl.innerText = "⚖️ プロモーション & プリベンションのバランスタイプ";
+      descEl.innerHTML = `
+        <p><strong>特徴：</strong> チャレンジ精神とリスク管理のバランスが取れた万能タイプ</p>
+        <p><strong>傾向：</strong> どちらのスコアも同等のため、状況に応じて「攻め」と「守り」を使い分けられる柔軟性を持っています。新規提案や挑戦の場面ではプロモーション焦点を発揮し、運用の安定化やリスク管理の場面ではプリベンション焦点を働かせることができます。</p>
+      `;
+    }
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function resetQuiz() {
+    answers.fill(null);
+    document.getElementById("quizForm").reset();
+    document.getElementById("quizForm").style.display = "block";
+    document.getElementById("result").style.display = "none";
+    renderQuestions();
+    updateProgress();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    renderQuestions();
+  });
+</script>
+</body>
+</html>

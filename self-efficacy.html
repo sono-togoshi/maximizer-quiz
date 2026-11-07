@@ -1,0 +1,401 @@
+コピーの手順についても把握いただきありがとうございます！これならスムーズに運用できますね。
+
+第4弾「一般的自己効力感（セルフ・エフィカシー）テスト」のWebアプリを作成しました。
+
+アルバート・バンデューラの社会的学習理論および坂野・東條らのGSESをベースにした10の質問（1〜4点選択、合計10〜40点）で、自己効力感を判定する仕様にしています。今回も確実に描画される構成で組んでいます。
+
+以下のコードを全選択してコピーし、`index.html` に上書きしてご利用ください。
+
+```html
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>一般的自己効力感（セルフ・エフィカシー）テスト</title>
+  <style>
+    :root {
+      --bg-color: #f4f7f6;
+      --card-bg: #ffffff;
+      --primary: #2b6cb0;
+      --primary-hover: #2c5282;
+      --text-main: #2d3748;
+      --text-sub: #718096;
+      --border-color: #e2e8f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 20px 12px;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+      background: var(--card-bg);
+      padding: 24px 16px;
+      border-radius: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+
+    header p {
+      font-size: 0.9rem;
+      color: var(--text-sub);
+    }
+
+    .info-box {
+      background: #ebf8ff;
+      border-left: 4px solid var(--primary);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.85rem;
+      margin-top: 12px;
+      text-align: left;
+    }
+
+    .progress-bar {
+      position: sticky;
+      top: 10px;
+      z-index: 10;
+      background: var(--card-bg);
+      padding: 12px 16px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .progress-track {
+      flex: 1;
+      height: 10px;
+      background: var(--border-color);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--primary);
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: var(--primary);
+      white-space: nowrap;
+    }
+
+    .question-card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 20px 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+      border: 1px solid var(--border-color);
+    }
+
+    .question-title {
+      font-weight: bold;
+      font-size: 1rem;
+      margin-bottom: 14px;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    @media (max-width: 480px) {
+      .options-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .option-btn {
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px 8px;
+      font-size: 0.85rem;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+
+    .option-btn:hover {
+      background: #e2e8f0;
+    }
+
+    .option-btn.selected {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+      font-weight: bold;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(43, 108, 176, 0.2);
+      margin-top: 10px;
+      margin-bottom: 40px;
+    }
+
+    .submit-btn:disabled {
+      background: #cbd5e0;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    #result {
+      display: none;
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 24px 20px;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .result-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      background: #ebf8ff;
+      color: var(--primary);
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+    }
+
+    .result-score {
+      font-size: 2.2rem;
+      font-weight: bold;
+      color: var(--primary);
+      margin-bottom: 12px;
+    }
+
+    .result-title {
+      font-size: 1.25rem;
+      font-weight: bold;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .result-desc {
+      text-align: left;
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: var(--text-main);
+      margin-bottom: 24px;
+    }
+
+    .retry-btn {
+      background: #edf2f7;
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>一般的自己効力感テスト</h1>
+    <p>アルバート・バンデューラの「社会的学習理論」に基づく10の質問</p>
+    <div class="info-box">
+      「自分なら困難を乗り越え、目標を達成できる」と信じられる自信の度合い（自己効力感）を測る診断です。
+    </div>
+  </header>
+
+  <div class="progress-bar">
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-text" id="progressText">0 / 10</div>
+  </div>
+
+  <form id="quizForm">
+    <div id="questionsContainer"></div>
+    <button type="button" class="submit-btn" id="submitBtn" disabled onclick="calculateScore()">診断結果を見る</button>
+  </form>
+
+  <div id="result">
+    <div class="result-badge">診断結果</div>
+    <div class="result-score" id="scoreDisplay">0 / 40 点</div>
+    <div class="result-title" id="typeTitle"></div>
+    <div class="result-desc" id="typeDesc"></div>
+    <button type="button" class="retry-btn" onclick="resetQuiz()">もう一度診断する</button>
+  </div>
+</div>
+
+<script>
+  const questions = [
+    "新しい課題や難しい問題に直面しても、自分なら何とか解決できると思う。",
+    "予期せぬトラブルやアクシデントが起きても、冷静に対処できる自信がある。",
+    "過去に大変な状況を乗り越えた経験があり、それが今の自信になっている。",
+    "自分の立てた目標や計画は、途中で諦めなければ達成できると感じる。",
+    "周囲の人が無理だと言うようなことでも、自分ならやり遂げられる気がする。",
+    "見知らぬ環境や新しい人間関係のなかでも、うまくやっていく自信がある。",
+    "失敗したとしても、「次はどうすればうまくいくか」を前向きに考えられる。",
+    "自分の能力やスキルを信じており、本番や本気を出せば実力を発揮できると思う。",
+    "人生の重大な決定（進路や仕事など）を、自分の責任と意思で下すことができる。",
+    "何かトラブルがあっても、「最終的にはなんとかなる（自分でなんとかできる）」と思える。"
+  ];
+
+  const options = [
+    { text: "1: 全く当てはまらない", value: 1 },
+    { text: "2: あまり当てはまらない", value: 2 },
+    { text: "3: ある程度当てはまる", value: 3 },
+    { text: "4: 非常によく当てはまる", value: 4 }
+  ];
+
+  const answers = new Array(questions.length).fill(null);
+
+  function renderQuestions() {
+    const container = document.getElementById("questionsContainer");
+    if (!container) return;
+    container.innerHTML = "";
+
+    questions.forEach((qText, qIdx) => {
+      const card = document.createElement("div");
+      card.className = "question-card";
+
+      const title = document.createElement("div");
+      title.className = "question-title";
+      title.innerText = `${qIdx + 1}. ${qText}`;
+      card.appendChild(title);
+
+      const grid = document.createElement("div");
+      grid.className = "options-grid";
+
+      options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "option-btn";
+        btn.innerText = opt.text;
+        btn.onclick = () => selectOption(qIdx, opt.value, btn);
+        grid.appendChild(btn);
+      });
+
+      card.appendChild(grid);
+      container.appendChild(card);
+    });
+  }
+
+  function selectOption(qIdx, val, btnElement) {
+    answers[qIdx] = val;
+    
+    const parentCard = btnElement.closest(".question-card");
+    const siblings = parentCard.querySelectorAll(".option-btn");
+    siblings.forEach(b => b.classList.remove("selected"));
+    btnElement.classList.add("selected");
+
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const answeredCount = answers.filter(a => a !== null).length;
+    const fill = document.getElementById("progressFill");
+    const text = document.getElementById("progressText");
+    const submitBtn = document.getElementById("submitBtn");
+
+    const pct = (answeredCount / questions.length) * 100;
+    fill.style.width = pct + "%";
+    text.innerText = `${answeredCount} / ${questions.length}`;
+
+    if (answeredCount === questions.length) {
+      submitBtn.disabled = false;
+    }
+  }
+
+  function calculateScore() {
+    const totalScore = answers.reduce((acc, curr) => acc + curr, 0);
+    
+    document.getElementById("quizForm").style.display = "none";
+    const resultDiv = document.getElementById("result");
+    resultDiv.style.display = "block";
+
+    document.getElementById("scoreDisplay").innerText = `${totalScore} / 40 点`;
+
+    const titleEl = document.getElementById("typeTitle");
+    const descEl = document.getElementById("typeDesc");
+
+    if (totalScore >= 31) {
+      titleEl.innerText = "👑【31点 〜 40点】高い自己効力感（自己信頼・チャレンジタイプ）";
+      descEl.innerHTML = `
+        <p><strong>特徴：</strong> 根拠のある強い自信を持ち、困難を楽しめる人です。</p>
+        <p><strong>傾向：</strong> 「自分ならできる」という感覚が非常に強く、高い目標にも物怖じせず挑戦できます。失敗しても過度に落ち込まず、次のアクションへ素早く切り替えられるメンタルの強さを持っています。</p>
+      `;
+    } else if (totalScore >= 21) {
+      titleEl.innerText = "⚖️【21点 〜 30点】平均的な自己効力感（現実派・ポテンシャルタイプ）";
+      descEl.innerHTML = `
+        <p><strong>特徴：</strong> 得意な分野には自信を持てるが、未知の領域には少し慎重になる人です。</p>
+        <p><strong>傾向：</strong> 経験があることや予測がつくことに対しては高いパフォーマンスを発揮できますが、まったく新しいことや想定外のトラブルに対しては不安を感じやすい傾向があります。小さな成功体験を積むことで、さらに自信を深められます。</p>
+      `;
+    } else {
+      titleEl.innerText = "🌱【10点 〜 20点】これからの自己効力感（慎重派・ステップアップタイプ）";
+      descEl.innerHTML = `
+        <p><strong>特徴：</strong> 自分を過小評価しがちで、失敗を恐れてしまう人です。</p>
+        <p><strong>傾向：</strong> 「自分には無理かもしれない」という不安が先立ち、行動を起こす前にブレーキをかけてしまいがちです。能力が低いわけではなく、自己評価の基準が厳しすぎる状態と言えます。まずはハードルを下げて「できた！」を増やすことが大切です。</p>
+      `;
+    }
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function resetQuiz() {
+    answers.fill(null);
+    document.getElementById("quizForm").reset();
+    document.getElementById("quizForm").style.display = "block";
+    document.getElementById("result").style.display = "none";
+    renderQuestions();
+    updateProgress();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    renderQuestions();
+  });
+</script>
+</body>
+</html>
+
+```

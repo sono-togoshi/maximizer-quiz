@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>選択の決定スタイル診断（サティスファイザー度チェック）</title>
+  <style>
+    :root {
+      --bg-color: #f4f7f6;
+      --card-bg: #ffffff;
+      --primary: #2b6cb0;
+      --primary-hover: #2c5282;
+      --text-main: #2d3748;
+      --text-sub: #718096;
+      --border-color: #e2e8f0;
+      --accent: #319795;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 20px 12px;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+      background: var(--card-bg);
+      padding: 24px 16px;
+      border-radius: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+
+    header p {
+      font-size: 0.9rem;
+      color: var(--text-sub);
+    }
+
+    .info-box {
+      background: #ebf8ff;
+      border-left: 4px solid var(--primary);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.85rem;
+      margin-top: 12px;
+      text-align: left;
+    }
+
+    .progress-bar {
+      position: sticky;
+      top: 10px;
+      z-index: 10;
+      background: var(--card-bg);
+      padding: 12px 16px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .progress-track {
+      flex: 1;
+      height: 10px;
+      background: var(--border-color);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--primary);
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: var(--primary);
+      white-space: nowrap;
+    }
+
+    .question-card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 20px 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+      border: 1px solid var(--border-color);
+    }
+
+    .question-title {
+      font-weight: bold;
+      font-size: 1rem;
+      margin-bottom: 14px;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    @media (max-width: 480px) {
+      .options-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .option-btn {
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px 8px;
+      font-size: 0.85rem;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+
+    .option-btn:hover {
+      background: #e2e8f0;
+    }
+
+    .option-btn.selected {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+      font-weight: bold;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(43, 108, 176, 0.2);
+      margin-top: 10px;
+      margin-bottom: 40px;
+    }
+
+    .submit-btn:disabled {
+      background: #cbd5e0;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    #result {
+      display: none;
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 24px 20px;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .result-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      background: #e6fffa;
+      color: var(--accent);
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+    }
+
+    .result-score {
+      font-size: 2.2rem;
+      font-weight: bold;
+      color: var(--primary);
+      margin-bottom: 12px;
+    }
+
+    .result-title {
+      font-size: 1.3rem;
+      font-weight: bold;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .result-desc {
+      text-align: left;
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: var(--text-main);
+      margin-bottom: 20px;
+    }
+
+    .retry-btn {
+      background: #edf2f7;
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>選択の決定スタイル診断</h1>
+    <p>ハーバート・サイモンの限定合理性理論に基づく10の質問</p>
+    <div class="info-box">
+      自分が納得できる基準で決断できる「サティスファイザー（満足者）」か、最高を追求する「マキシマイザー（追求者）」かを測るテストです。
+    </div>
+  </header>
+
+  <div class="progress-bar">
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-text" id="progressText">0 / 10</div>
+  </div>
+
+  <form id="quizForm">
+    <div id="questionsContainer"></div>
+    <button type="button" class="submit-btn" id="submitBtn" disabled onclick="calculateScore()">診断結果を見る</button>
+  </form>
+
+  <div id="result">
+    <div class="result-badge">診断結果</div>
+    <div class="result-score" id="scoreDisplay">0 / 40 点</div>
+    <div class="result-title" id="typeTitle"></div>
+    <div class="result-desc" id="typeDesc"></div>
+    <button type="button" class="retry-btn" onclick="resetQuiz()">もう一度診断する</button>
+  </div>
+</div>
+
+<script>
+  const questions = [
+    "買い物をするとき、他の店やサイトにもっと良い（安い）ものがないか、つい何件も回って探してしまう。",
+    "レストランでメニューを選ぶとき、一番美味しくて後悔しないものを決めようとして、時間がかかってしまう。",
+    "何か一つを選ぶとき、存在するすべての選択肢（映画のリスト、旅行プランなど）を確認しないと気が済まない。",
+    "たとえ自分が気に入った服を買ったとしても、後からもっと素敵なデザインを見つけると、少し後悔する。",
+    "テレビのチャンネルや動画配信サービスで、今見ているものより面白い番組がないか、次々と探してしまう。",
+    "友人へのプレゼントを選ぶとき、「最高に喜ばれるもの」を見つけるために何時間も費やすことがある。",
+    "何かを選択したあと、「もし別のほうを選んでいたら、どうなっていただろう」とよく考える。",
+    "家電やガジェットを買う前は、あらゆる専門家のレビューや口コミを徹底的に比較する。",
+    "自分の人生において、常に「トップ（最高のもの）」を目指さないと気が済まない、または妥協したくないと感じる。",
+    "仕事やキャリアの選択において、自分の決断が「本当にベストだったのか」と常に自問自答している。"
+  ];
+
+  const options = [
+    { text: "1: 全く当てはまらない", value: 1 },
+    { text: "2: あまり当てはまらない", value: 2 },
+    { text: "3: ある程度当てはまる", value: 3 },
+    { text: "4: 非常によく当てはまる", value: 4 }
+  ];
+
+  const answers = new Array(questions.length).fill(null);
+
+  function renderQuestions() {
+    const container = document.getElementById("questionsContainer");
+    container.innerHTML = "";
+
+    questions.forEach((qText, qIdx) => {
+      const card = document.createElement("div");
+      card.className = "question-card";
+
+      const title = document.createElement("div");
+      title.className = "question-title";
+      title.innerText = `${qIdx + 1}. ${qText}`;
+      card.appendChild(title);
+
+      const grid = document.createElement("div");
+      grid.className = "options-grid";
+
+      options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "option-btn";
+        btn.innerText = opt.text;
+        btn.onclick = () => selectOption(qIdx, opt.value, btn);
+        grid.appendChild(btn);
+      });
+
+      card.appendChild(grid);
+      container.appendChild(card);
+    });
+  }
+
+  function selectOption(qIdx, val, btnElement) {
+    answers[qIdx] = val;
+    
+    const parentCard = btnElement.closest(".question-card");
+    const siblings = parentCard.querySelectorAll(".option-btn");
+    siblings.forEach(b => b.classList.remove("selected"));
+    btnElement.classList.add("selected");
+
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const answeredCount = answers.filter(a => a !== null).length;
+    const fill = document.getElementById("progressFill");
+    const text = document.getElementById("progressText");
+    const submitBtn = document.getElementById("submitBtn");
+
+    const pct = (answeredCount / questions.length) * 100;
+    fill.style.width = pct + "%";
+    text.innerText = `${answeredCount} / ${questions.length}`;
+
+    if (answeredCount === questions.length) {
+      submitBtn.disabled = false;
+    }
+  }
+
+  function calculateScore() {
+    const totalScore = answers.reduce((acc, curr) => acc + curr, 0);
+    
+    document.getElementById("quizForm").style.display = "none";
+    const resultDiv = document.getElementById("result");
+    resultDiv.style.display = "block";
+
+    document.getElementById("scoreDisplay").innerText = `${totalScore} / 40 点`;
+
+    const titleEl = document.getElementById("typeTitle");
+    const descEl = document.getElementById("typeDesc");
+
+    if (totalScore <= 20) {
+      titleEl.innerText = "【10点 〜 20点】生粋のサティスファイザー（満足者タイプ）";
+      descEl.innerHTML = `
+        <p><strong>特徴：</strong> 「自分のものさし」をしっかり持っている人です。</p>
+        <p><strong>傾向：</strong> 自分が「これで良い」と思える基準を満たしていれば、それ以上の比較をせずにサッと決断できます。選択にエネルギーを使わないため、毎日のストレスが非常に少なく、決断した後の幸福度や満足感も高い状態をキープできます。</p>
+      `;
+    } else if (totalScore <= 30) {
+      titleEl.innerText = "【21点 〜 30点】バランス型のサティスファイザー（中間タイプ）";
+      descEl.innerHTML = `
+        <p><strong>特徴：</strong> 基本は効率的ですが、大切な場面ではこだわる人です。</p>
+        <p><strong>傾向：</strong> 日常の小さなお買い物や食事は直感で素早く決められますが、高価な買い物や人生の転機など「失敗したくない場面」ではマキシマイザー（追求者）のようにじっくり比較検討します。非常に現代的で、バランスの取れた決断スタイルです。</p>
+      `;
+    } else {
+      titleEl.innerText = "【31点 〜 40点】生粋のマキシマイザー（最高・完璧追求タイプ）";
+      descEl.innerHTML = `
+        <p><strong>特徴：</strong> 常に「ベストな選択」を求め続ける完璧主義な人です。</p>
+        <p><strong>傾向：</strong> 妥協を許さないため、結果的に質の高いものや優れたキャリアを手に入れる能力があります。一方で、選択肢が多すぎると「決められないストレス」に苛まれやすく、選んだ後も「本当にこれで良かったのか」と悩みやすい傾向があります。</p>
+      `;
+    }
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function resetQuiz() {
+    answers.fill(null);
+    document.getElementById("quizForm").reset();
+    document.getElementById("quizForm").style.display = "block";
+    document.getElementById("result").style.display = "none";
+    renderQuestions();
+    updateProgress();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  renderQuestions();
+</script>
+</body>
+</html>

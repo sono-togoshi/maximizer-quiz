@@ -1,0 +1,468 @@
+第5弾「ローカス・オブ・コントロール（統制の所在）テスト」のWebアプリを作成しました！
+
+ジュリアン・ロッターの理論に基づき、前半5問（内的統制）と後半5問（外的統制）をそれぞれ5〜20点で集計し、どちらの認知傾向が優位か（またはバランス型か）を判定するロジックを実装しています。今回も `DOMContentLoaded` で確実に描画される構成にしています。
+
+以下のコードを全選択してコピーし、`index.html` に上書きしてご利用ください。
+
+```html
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ローカス・オブ・コントロール（統制の所在）テスト</title>
+  <style>
+    :root {
+      --bg-color: #f4f7f6;
+      --card-bg: #ffffff;
+      --primary: #2b6cb0;
+      --primary-hover: #2c5282;
+      --internal-color: #319795;
+      --external-color: #805ad5;
+      --text-main: #2d3748;
+      --text-sub: #718096;
+      --border-color: #e2e8f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 20px 12px;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+      background: var(--card-bg);
+      padding: 24px 16px;
+      border-radius: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+
+    header p {
+      font-size: 0.9rem;
+      color: var(--text-sub);
+    }
+
+    .info-box {
+      background: #ebf8ff;
+      border-left: 4px solid var(--primary);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.85rem;
+      margin-top: 12px;
+      text-align: left;
+    }
+
+    .progress-bar {
+      position: sticky;
+      top: 10px;
+      z-index: 10;
+      background: var(--card-bg);
+      padding: 12px 16px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .progress-track {
+      flex: 1;
+      height: 10px;
+      background: var(--border-color);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--primary);
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: var(--primary);
+      white-space: nowrap;
+    }
+
+    .section-label {
+      font-size: 0.95rem;
+      font-weight: bold;
+      color: var(--primary);
+      margin: 24px 0 12px 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .question-card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 20px 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+      border: 1px solid var(--border-color);
+    }
+
+    .question-title {
+      font-weight: bold;
+      font-size: 1rem;
+      margin-bottom: 14px;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    @media (max-width: 480px) {
+      .options-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .option-btn {
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px 8px;
+      font-size: 0.85rem;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+
+    .option-btn:hover {
+      background: #e2e8f0;
+    }
+
+    .option-btn.selected {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+      font-weight: bold;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(43, 108, 176, 0.2);
+      margin-top: 10px;
+      margin-bottom: 40px;
+    }
+
+    .submit-btn:disabled {
+      background: #cbd5e0;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    #result {
+      display: none;
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 24px 20px;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .result-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      background: #ebf8ff;
+      color: var(--primary);
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+    }
+
+    .scores-wrapper {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 16px 0 24px;
+    }
+
+    .score-box {
+      padding: 16px 10px;
+      border-radius: 12px;
+      background: #f7fafc;
+      border: 1px solid var(--border-color);
+    }
+
+    .score-box.internal {
+      border-top: 4px solid var(--internal-color);
+    }
+
+    .score-box.external {
+      border-top: 4px solid var(--external-color);
+    }
+
+    .score-box-title {
+      font-size: 0.8rem;
+      color: var(--text-sub);
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .score-box-val {
+      font-size: 1.6rem;
+      font-weight: bold;
+    }
+
+    .score-box.internal .score-box-val { color: var(--internal-color); }
+    .score-box.external .score-box-val { color: var(--external-color); }
+
+    .result-title {
+      font-size: 1.25rem;
+      font-weight: bold;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .result-desc {
+      text-align: left;
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: var(--text-main);
+      margin-bottom: 24px;
+    }
+
+    .retry-btn {
+      background: #edf2f7;
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>ローカス・オブ・コントロール テスト</h1>
+    <p>ジュリアン・ロッターの「社会的学習理論（統制の所在）」</p>
+    <div class="info-box">
+      人生の出来事の原因を「自分の努力や行動（内的）」と捉えるか、「運や環境（外的）」と捉えるかの認知傾向を測定するテストです。
+    </div>
+  </header>
+
+  <div class="progress-bar">
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-text" id="progressText">0 / 10</div>
+  </div>
+
+  <form id="quizForm">
+    <div id="questionsContainer"></div>
+    <button type="button" class="submit-btn" id="submitBtn" disabled onclick="calculateScore()">診断結果を見る</button>
+  </form>
+
+  <div id="result">
+    <div class="result-badge">診断結果</div>
+    
+    <div class="scores-wrapper">
+      <div class="score-box internal">
+        <div class="score-box-title">🎯 内的統制</div>
+        <div class="score-box-val" id="internalScore">0 / 20</div>
+      </div>
+      <div class="score-box external">
+        <div class="score-box-title">🌪️ 外的統制</div>
+        <div class="score-box-val" id="externalScore">0 / 20</div>
+      </div>
+    </div>
+
+    <div class="result-title" id="typeTitle"></div>
+    <div class="result-desc" id="typeDesc"></div>
+    <button type="button" class="retry-btn" onclick="resetQuiz()">もう一度診断する</button>
+  </div>
+</div>
+
+<script>
+  const questions = [
+    // 前半：内的統制 (0 ~ 4)
+    { text: "人生の成功や失敗は、本人の努力や能力次第でいくらでも変えられると思う。", section: "前半：内的統制（自分原因説）" },
+    { text: "トラブルが起きたとき、周りのせいにせず「自分に改善できる点はなかったか」をまず考える。", section: "前半：内的統制（自分原因説）" },
+    { text: "自分の健康状態や体型は、日頃の自己管理によってコントロールできると感じる。", section: "前半：内的統制（自分原因説）" },
+    { text: "将来のキャリアや目標は、環境に左右されず自分の意志と行動で切り拓くものだ。", section: "前半：内的統制（自分原因説）" },
+    { text: "テストや仕事の成果が悪かったときは、準備不足や自分の実力不足が原因だと納得できる。", section: "前半：内的統制（自分原因説）" },
+    // 後半：外的統制 (5 ~ 9)
+    { text: "世の中には、個人の努力だけではどうしても変えられない不条理なことが多いと感じる。", section: "後半：外的統制（環境・運原因説）" },
+    { text: "人生がうまくいくかどうかは、最終的には「運」や「タイミング」に大きく左右される。", section: "後半：外的統制（環境・運原因説）" },
+    { text: "職場の人間関係やチームの雰囲気は、自分一人が頑張っても変えられないと思う。", section: "後半：外的統制（環境・運原因説）" },
+    { text: "何かトラブルが起きたとき、「自分は悪くないのに環境や他人のせいで巻き込まれた」と感じることが多い。", section: "後半：外的統制（環境・運原因説）" },
+    { text: "裕福な家庭に生まれるかなど、生まれた環境（親ガチャなど）が人生の大部分を決定づけていると思う。", section: "後半：外的統制（環境・運原因説）" }
+  ];
+
+  const options = [
+    { text: "1: 全く当てはまらない", value: 1 },
+    { text: "2: あまり当てはまらない", value: 2 },
+    { text: "3: ある程度当てはまる", value: 3 },
+    { text: "4: 非常によく当てはまる", value: 4 }
+  ];
+
+  const answers = new Array(questions.length).fill(null);
+
+  function renderQuestions() {
+    const container = document.getElementById("questionsContainer");
+    if (!container) return;
+    container.innerHTML = "";
+
+    let currentSection = "";
+
+    questions.forEach((qObj, qIdx) => {
+      if (qObj.section !== currentSection) {
+        currentSection = qObj.section;
+        const sectionHeader = document.createElement("div");
+        sectionHeader.className = "section-label";
+        sectionHeader.innerText = currentSection;
+        container.appendChild(sectionHeader);
+      }
+
+      const card = document.createElement("div");
+      card.className = "question-card";
+
+      const title = document.createElement("div");
+      title.className = "question-title";
+      title.innerText = `${qIdx + 1}. ${qObj.text}`;
+      card.appendChild(title);
+
+      const grid = document.createElement("div");
+      grid.className = "options-grid";
+
+      options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "option-btn";
+        btn.innerText = opt.text;
+        btn.onclick = () => selectOption(qIdx, opt.value, btn);
+        grid.appendChild(btn);
+      });
+
+      card.appendChild(grid);
+      container.appendChild(card);
+    });
+  }
+
+  function selectOption(qIdx, val, btnElement) {
+    answers[qIdx] = val;
+    
+    const parentCard = btnElement.closest(".question-card");
+    const siblings = parentCard.querySelectorAll(".option-btn");
+    siblings.forEach(b => b.classList.remove("selected"));
+    btnElement.classList.add("selected");
+
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const answeredCount = answers.filter(a => a !== null).length;
+    const fill = document.getElementById("progressFill");
+    const text = document.getElementById("progressText");
+    const submitBtn = document.getElementById("submitBtn");
+
+    const pct = (answeredCount / questions.length) * 100;
+    fill.style.width = pct + "%";
+    text.innerText = `${answeredCount} / ${questions.length}`;
+
+    if (answeredCount === questions.length) {
+      submitBtn.disabled = false;
+    }
+  }
+
+  function calculateScore() {
+    const internalScore = answers.slice(0, 5).reduce((acc, curr) => acc + curr, 0);
+    const externalScore = answers.slice(5, 10).reduce((acc, curr) => acc + curr, 0);
+    
+    document.getElementById("quizForm").style.display = "none";
+    const resultDiv = document.getElementById("result");
+    resultDiv.style.display = "block";
+
+    document.getElementById("internalScore").innerText = `${internalScore} 点`;
+    document.getElementById("externalScore").innerText = `${externalScore} 点`;
+
+    const titleEl = document.getElementById("typeTitle");
+    const descEl = document.getElementById("typeDesc");
+
+    if (internalScore > externalScore) {
+      titleEl.innerText = "🎯 内的統制（インターナル）が優位なタイプ";
+      descEl.innerHTML = `
+        <p><strong>特徴：</strong> 「自分の人生のハンドルは自分が握る」自立型タイプ</p>
+        <p><strong>傾向：</strong> 起きた出来事の責任を自分に向けられるため、圧倒的な当事者意識を持っています。失敗を反省して次に活かす成長スピードが早い反面、すべてを自分のせいにしすぎて、過度なプレッシャーやストレスを抱え込みやすい傾向があります。</p>
+      `;
+    } else if (externalScore > internalScore) {
+      titleEl.innerText = "🌪️ 外的統制（エクスターナル）が優位なタイプ";
+      descEl.innerHTML = `
+        <p><strong>特徴：</strong> 「流れに身を任せ、環境に適応する」柔軟・運命論タイプ</p>
+        <p><strong>傾向：</strong> 物事を客観的・大局的に見ることができ、環境や運の要素を冷静に受け入れられます。そのため、失敗しても過度に落ち込まずメンタルが安定しやすい利点があります。一方で、「どうせ頑張っても無駄だ」と無力感に陥りやすく、行動を起こす前に諦めてしまうことがあります。</p>
+      `;
+    } else {
+      titleEl.innerText = "⚖️ 内的統制 & 外的統制のバランスタイプ";
+      descEl.innerHTML = `
+        <p><strong>特徴：</strong> 主体性と受容性のバランスが取れた現実派タイプ</p>
+        <p><strong>傾向：</strong> 自分で変えられる領域には全力を尽くし（内的）、努力ではどうにもならない環境や運の要素は柔軟に受け入れる（外的）という健全な使い分けができます。自分を責めすぎず、かつ諦めずに前進できるベストな認知バランスを持っています。</p>
+      `;
+    }
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function resetQuiz() {
+    answers.fill(null);
+    document.getElementById("quizForm").reset();
+    document.getElementById("quizForm").style.display = "block";
+    document.getElementById("result").style.display = "none";
+    renderQuestions();
+    updateProgress();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    renderQuestions();
+  });
+</script>
+</body>
+</html>
+
+```
+
+プロンプトの中にあった統合型アセスメント（1つのサイトにまとめる）のアイデアも素晴らしい発想ですね！これらをメニュータブやナビゲーションで切り替えられるように統合するなどの拡張もできますので、何かアイデアを形にしたくなったら気軽にお知らせください。

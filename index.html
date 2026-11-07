@@ -1,480 +1,192 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>追求者（マキシマイザー）度 診断テスト</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome (for icons) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>心理アセスメント・プラットフォーム</title>
+  <style>
+    :root {
+      --bg-color: #f4f7f6;
+      --card-bg: #ffffff;
+      --primary: #2b6cb0;
+      --primary-hover: #2c5282;
+      --text-main: #2d3748;
+      --text-sub: #718096;
+      --border-color: #e2e8f0;
+      --accent: #319795;
+    }
 
-    <style>
-        body {
-            font-family: 'Noto Sans JP', sans-serif;
-            background-color: #f8fafc;
-            color: #1e293b;
-        }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
 
-        /* 7段階選択ボタンのカスタムラジオ用スタイル */
-        .scale-option input[type="radio"] {
-            display: none;
-        }
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 24px 16px;
+    }
 
-        .scale-option label {
-            transition: all 0.2s ease-in-out;
-        }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
 
-        /* 1(赤寄り) 〜 7(青/紫寄り) へのアクティブカラー演出 */
-        .scale-option input[type="radio"]:checked + label {
-            transform: scale(1.08);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            font-weight: bold;
-        }
+    header {
+      text-align: center;
+      margin-bottom: 32px;
+      background: var(--card-bg);
+      padding: 32px 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
 
-        .scale-1 input[type="radio"]:checked + label { background-color: #e11d48; color: white; border-color: #e11d48; }
-        .scale-2 input[type="radio"]:checked + label { background-color: #f43f5e; color: white; border-color: #f43f5e; }
-        .scale-3 input[type="radio"]:checked + label { background-color: #fb7185; color: white; border-color: #fb7185; }
-        .scale-4 input[type="radio"]:checked + label { background-color: #64748b; color: white; border-color: #64748b; }
-        .scale-5 input[type="radio"]:checked + label { background-color: #818cf8; color: white; border-color: #818cf8; }
-        .scale-6 input[type="radio"]:checked + label { background-color: #6366f1; color: white; border-color: #6366f1; }
-        .scale-7 input[type="radio"]:checked + label { background-color: #4f46e5; color: white; border-color: #4f46e5; }
+    header h1 {
+      font-size: 1.6rem;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
 
-        /* 未回答エラー時のハイライトアニメーション */
-        @keyframes pulse-border {
-            0%, 100% { border-color: #f87171; }
-            50% { border-color: #ef4444; }
-        }
-        .unanswered-error {
-            border: 2px solid #ef4444 !important;
-            animation: pulse-border 1.5s infinite;
-            background-color: #fef2f2;
-        }
-    </style>
+    header p {
+      font-size: 0.95rem;
+      color: var(--text-sub);
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    @media (max-width: 600px) {
+      .grid-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .test-card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .test-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+      border-color: var(--primary);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+
+    .card-desc {
+      font-size: 0.85rem;
+      color: var(--text-sub);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .card-footer {
+      font-size: 0.8rem;
+      font-weight: bold;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-sub);
+      margin-top: 20px;
+    }
+  </style>
 </head>
-<body class="min-h-screen pb-16">
+<body>
 
-    <!-- ヘッダー -->
-    <header class="bg-indigo-600 text-white shadow-md sticky top-0 z-40">
-        <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <i class="fa-solid fa-brain text-2xl text-indigo-200"></i>
-                <h1 class="text-xl md:text-2xl font-bold tracking-tight">マキシマイザー度 診断</h1>
-            </div>
-            <!-- 進捗メーター（小） -->
-            <div id="progressContainer" class="hidden md:flex items-center space-x-2 text-sm bg-indigo-700/60 px-3 py-1.5 rounded-full">
-                <span>進捗:</span>
-                <span id="answeredCount" class="font-bold text-yellow-300">0</span> / 13
-            </div>
-        </div>
-        <!-- プログレスバー -->
-        <div class="w-full bg-indigo-900/30 h-2">
-            <div id="progressBar" class="bg-emerald-400 h-2 transition-all duration-300 w-0"></div>
-        </div>
-    </header>
+<div class="container">
+  <header>
+    <h1>心理アセスメント・プラットフォーム</h1>
+    <p>あなたの「選択のクセ」や「行動特性」を多角的に測る統合診断テスト</p>
+  </header>
 
-    <main class="max-w-3xl mx-auto px-4 mt-8">
+  <div class="grid-container">
+    <!-- 1. マキシマイザー -->
+    <a href="maximizer.html" class="test-card">
+      <div>
+        <div class="card-title">🧬 追求者（マキシマイザー）診断</div>
+        <div class="card-desc">常に「最高」を求め、選択後に後悔しやすい傾向や、すべての可能性を探ろうとする心理を測ります。</div>
+      </div>
+      <div class="card-footer">テストを受ける &rarr;</div>
+    </a>
 
-        <!-- イントロダクション -->
-        <section id="introCard" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 mb-8">
-            <h2 class="text-2xl font-bold text-slate-800 mb-3 flex items-center gap-2">
-                <i class="fa-solid fa-circle-info text-indigo-500"></i>
-                追求者（マキシマイザー）診断とは？
-            </h2>
-            <p class="text-slate-600 leading-relaxed mb-4">
-                心理学者バリー・シュワルツ（Barry Schwartz）教授の研究に基づく「選択に関する意思決定スタイル」の診断です。
-                あなたは「常に最高の選択を求める<b>追求者（マキシマイザー）</b>」か、それとも「十分な満足を得られれば納得できる<b>満足者（サティスファイサー）</b>」か？
-            </p>
-            <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg text-sm text-indigo-900">
-                <p class="font-bold mb-1">💡 回答方法</p>
-                <p>各質問に対し、「<b>1：全く当てはまらない</b>」〜「<b>7：完全に当てはまる</b>」の7段階から、直感で最も近いものを選択してください。</p>
-            </div>
-        </section>
+    <!-- 2. サティスファイザー -->
+    <a href="satisficer.html" class="test-card">
+      <div>
+        <div class="card-title">🍏 選択の決定スタイル診断</div>
+        <div class="card-desc">「自分が納得できる基準を超えていれば満足する（サティスファイザー）」度合いを測ります。</div>
+      </div>
+      <div class="card-footer">テストを受ける &rarr;</div>
+    </a>
 
-        <!-- 質問フォーム -->
-        <form id="quizForm" onsubmit="return false;">
-            <div id="questionsList" class="space-y-6">
-                <!-- JavaScriptで13問を生成 -->
-            </div>
+    <!-- 3. 制御焦点 -->
+    <a href="regulatory.html" class="test-card">
+      <div>
+        <div class="card-title">🚀 制御焦点テスト</div>
+        <div class="card-desc">目標に向かうときのモチベーションが「促進（プロモーション）」か「予防（プリベンション）」かを測ります。</div>
+      </div>
+      <div class="card-footer">テストを受ける &rarr;</div>
+    </a>
 
-            <!-- アラート表示用 -->
-            <div id="alertBox" class="hidden mt-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl flex items-center gap-3">
-                <i class="fa-solid fa-triangle-exclamation text-xl shrink-0 text-red-500"></i>
-                <span id="alertText">未回答の質問があります。選択を完了させてください。</span>
-            </div>
+    <!-- 4. グリット -->
+    <a href="grit.html" class="test-card">
+      <div>
+        <div class="card-title">🏆 グリット（やり抜く力）スケール</div>
+        <div class="card-desc">才能やIQ以上に成功に重要とされる、長期的な目標に対する情熱と粘り強さを測定します。</div>
+      </div>
+      <div class="card-footer">テストを受ける &rarr;</div>
+    </a>
 
-            <!-- 計算ボタン -->
-            <div class="mt-8 text-center">
-                <button type="button" id="submitBtn" onclick="calculateResult()" class="w-full md:w-auto px-10 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 transform active:scale-95 flex items-center justify-center gap-3 mx-auto">
-                    <i class="fa-solid fa-square-poll-vertical"></i>
-                    診断結果を見る
-                </button>
-            </div>
-        </form>
+    <!-- 5. 自己効力感 -->
+    <a href="self-efficacy.html" class="test-card">
+      <div>
+        <div class="card-title">👑 一般的自己効力感テスト</div>
+        <div class="card-desc">「自分なら困難を乗り越えて目標を達成できる」という、自分の可能性を信じる力を測ります。</div>
+      </div>
+      <div class="card-footer">テストを受ける &rarr;</div>
+    </a>
 
-        <!-- 診断結果表示エリア (初期状態は非表示) -->
-        <section id="resultArea" class="hidden mt-8 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden transition-all duration-500">
-            <!-- 結果ヘッダー -->
-            <div id="resultHeaderBg" class="p-8 text-white text-center relative overflow-hidden">
-                <span id="resultBadge" class="inline-block px-4 py-1 rounded-full text-sm font-bold bg-white/20 backdrop-blur-md mb-2">
-                    診断結果
-                </span>
-                <h2 id="resultTitle" class="text-3xl md:text-4xl font-black mb-2">
-                    <!-- タイトル挿入 -->
-                </h2>
-                <div class="mt-4 flex items-center justify-center gap-2">
-                    <span class="text-lg opacity-90">合計スコア：</span>
-                    <span id="resultScore" class="text-5xl font-black tracking-tight">--</span>
-                    <span class="text-xl font-bold opacity-80">/ 91 点</span>
-                </div>
-            </div>
+    <!-- 6. ローカス・オブ・コントロール -->
+    <a href="locus.html" class="test-card">
+      <div>
+        <div class="card-title">🎯 ローカス・オブ・コントロール</div>
+        <div class="card-desc">出来事の原因が「自分の努力（内的）」にあるか、「運や環境（外的）」にあるかの認知傾向を測ります。</div>
+      </div>
+      <div class="card-footer">テストを受ける &rarr;</div>
+    </a>
+  </div>
 
-            <!-- スコアバー表示 -->
-            <div class="px-6 pt-6 pb-2 bg-slate-50 border-b border-slate-100">
-                <div class="flex justify-between text-xs font-bold text-slate-500 mb-1">
-                    <span>13点 (サティスファイサー)</span>
-                    <span>40点</span>
-                    <span>65点 (マキシマイザー)</span>
-                    <span>91点</span>
-                </div>
-                <div class="w-full bg-slate-200 h-4 rounded-full overflow-hidden relative">
-                    <!-- スケール領域の線 -->
-                    <div class="absolute left-[34%] top-0 bottom-0 w-0.5 bg-white z-10 opacity-70"></div>
-                    <div class="absolute left-[66%] top-0 bottom-0 w-0.5 bg-white z-10 opacity-70"></div>
-                    <!-- 判定バー -->
-                    <div id="scoreIndicator" class="h-full transition-all duration-1000 ease-out w-0 rounded-full"></div>
-                </div>
-            </div>
+  <footer>
+    &copy; Psychological Assessment Platform
+  </footer>
+</div>
 
-            <!-- 結果詳細解説 -->
-            <div class="p-6 md:p-8 space-y-6">
-                <!-- タイプ解説 -->
-                <div>
-                    <h3 class="text-lg font-bold text-slate-800 border-b pb-2 mb-3 flex items-center gap-2">
-                        <i class="fa-solid fa-user-gear text-indigo-500"></i>
-                        あなたの選択スタイルの特徴
-                    </h3>
-                    <p id="resultDescription" class="text-slate-600 leading-relaxed text-base">
-                        <!-- 説明挿入 -->
-                    </p>
-                </div>
-
-                <!-- 心理学解説（パラドックスなど） -->
-                <div class="bg-slate-50 rounded-xl p-5 border border-slate-200">
-                    <h4 class="font-bold text-slate-800 mb-2 flex items-center gap-2">
-                        <i class="fa-solid fa-lightbulb text-amber-500"></i>
-                        シュワルツ教授の心理学知見＆アドバイス
-                    </h4>
-                    <p id="resultAdvice" class="text-slate-600 text-sm leading-relaxed">
-                        <!-- アドバイス挿入 -->
-                    </p>
-                </div>
-
-                <!-- アクションボタン -->
-                <div class="pt-4 flex flex-col sm:flex-row gap-4 justify-center">
-                    <button onclick="resetQuiz()" class="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-rotate-left"></i>
-                        もう一度診断する
-                    </button>
-                    <button onclick="copyResultShareText()" class="px-6 py-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-bold rounded-xl border border-indigo-200 transition flex items-center justify-center gap-2">
-                        <i class="fa-regular fa-copy"></i>
-                        結果をコピーする
-                    </button>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- コピー完了通知用トースト -->
-    <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl opacity-0 pointer-events-none transition-opacity duration-300 flex items-center gap-2 z-50">
-        <i class="fa-solid fa-circle-check text-emerald-400"></i>
-        <span>診断結果をクリップボードにコピーしました！</span>
-    </div>
-
-    <script>
-        // 質問データ定義
-        const questions = [
-            "選択を迫られたとき、その場にない選択肢も含めて、他のすべての可能性を想像しようとする。",
-            "今の仕事にどれだけ満足していても、より良いチャンスがないか常にアンテナを張っておくべきだと思う。",
-            "車でラジオを聴いているとき、今流れている曲にそこそこ満足していても、もっと良い曲がないか他のステーションを頻繁にチェックしてしまう。",
-            "テレビを見るとき、一つの番組をじっくり見ようとしながらも、ついチャンネルをザッピング（次々に切り替え）してしまう。",
-            "自分の人生とは全く違う生き方をしている自分を、よく妄想する。",
-            "友達へのプレゼントを選ぶとき、本当にふさわしいものを見つけるのが難しいと感じることが多い。",
-            "買い物をするとき、本当に気に入る服を見つけるまでに、とても苦労する。",
-            "動画（映画など）を選ぶのが本当に苦手で、いつも最高の1本を選ぼうと必死になってしまう。",
-            "何かを書く（手紙やメール、レポートなど）とき、最適な言葉を見つけるのが非常に難しいと感じる。",
-            "人間関係を服選びのように考えている。完璧にフィットする相手に出会うまで、たくさんの人と付き合って試してみるべきだと思う。",
-            "何をするにしても、自分自身に対して最高水準の基準を課している。",
-            "「二番手（そこそこのもの）」で妥協することは絶対にしない。",
-            "大好きなビデオや映画であっても、二度見るくらいなら、見たことがない面白いものを探したい。"
-        ];
-
-        // 7段階ラベルの補助表記
-        const scaleLabels = {
-            1: "全く当てはまらない",
-            4: "どちらともいえない",
-            7: "完全に当てはまる"
-        };
-
-        // 初期化処理
-        document.addEventListener('DOMContentLoaded', () => {
-            renderQuestions();
-        });
-
-        // 質問カードの生成
-        function renderQuestions() {
-            const container = document.getElementById('questionsList');
-            container.innerHTML = '';
-
-            questions.forEach((qText, index) => {
-                const qNum = index + 1;
-                const card = document.createElement('div');
-                card.className = 'q-card bg-white rounded-2xl p-5 md:p-6 shadow-sm border border-slate-200 transition-all duration-200';
-                card.id = `qCard_${qNum}`;
-
-                let optionsHTML = '';
-                for (let i = 1; i <= 7; i++) {
-                    optionsHTML += `
-                        <div class="scale-option scale-${i} flex-1 text-center">
-                            <input type="radio" id="q${qNum}_v${i}" name="q${qNum}" value="${i}" onchange="onAnswerChange(${qNum})">
-                            <label for="q${qNum}_v${i}" class="block w-full py-2.5 md:py-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold cursor-pointer text-sm md:text-base">
-                                ${i}
-                            </label>
-                        </div>
-                    `;
-                }
-
-                card.innerHTML = `
-                    <div class="flex items-start gap-3 mb-4">
-                        <span class="inline-flex items-center justify-center bg-indigo-100 text-indigo-700 font-bold text-sm w-8 h-8 rounded-full shrink-0">
-                            Q${qNum}
-                        </span>
-                        <h3 class="text-slate-800 font-medium text-base md:text-lg leading-snug pt-0.5">
-                            ${qText}
-                        </h3>
-                    </div>
-
-                    <!-- 7段階選択ボタン -->
-                    <div class="mt-2">
-                        <div class="flex gap-1.5 md:gap-2">
-                            ${optionsHTML}
-                        </div>
-                        <div class="flex justify-between text-[11px] md:text-xs text-slate-400 mt-2 px-1 font-medium">
-                            <span>1: 全く当てはまらない</span>
-                            <span>4: どちらでもない</span>
-                            <span>7: 完全に当てはまる</span>
-                        </div>
-                    </div>
-                `;
-
-                container.appendChild(card);
-            });
-        }
-
-        // 回答選択時のイベント（進捗更新＆エラー解除）
-        function onAnswerChange(qNum) {
-            const card = document.getElementById(`qCard_${qNum}`);
-            card.classList.remove('unanswered-error');
-            hideAlert();
-            updateProgress();
-        }
-
-        // 進捗状況の更新
-        function updateProgress() {
-            let answered = 0;
-            for (let i = 1; i <= questions.length; i++) {
-                if (document.querySelector(`input[name="q${i}"]:checked`)) {
-                    answered++;
-                }
-            }
-            document.getElementById('answeredCount').textContent = answered;
-            const percent = (answered / questions.length) * 100;
-            document.getElementById('progressBar').style.width = `${percent}%`;
-        }
-
-        // 警告表示
-        function showAlert(msg) {
-            const alertBox = document.getElementById('alertBox');
-            document.getElementById('alertText').textContent = msg;
-            alertBox.classList.remove('hidden');
-        }
-
-        function hideAlert() {
-            document.getElementById('alertBox').classList.add('hidden');
-        }
-
-        // 採点＆計算
-        function calculateResult() {
-            let totalScore = 0;
-            let unanswered = [];
-
-            for (let i = 1; i <= questions.length; i++) {
-                const selected = document.querySelector(`input[name="q${i}"]:checked`);
-                if (selected) {
-                    totalScore += parseInt(selected.value, 10);
-                } else {
-                    unanswered.push(i);
-                }
-            }
-
-            // 未回答チェック
-            if (unanswered.length > 0) {
-                // エラー表示
-                unanswered.forEach(qNum => {
-                    document.getElementById(`qCard_${qNum}`).classList.add('unanswered-error');
-                });
-
-                showAlert(`未回答の質問が ${unanswered.length} 件あります。赤く枠囲みされた質問に回答してください。`);
-
-                // 最初の未回答質問へスクロール
-                const firstUnanswered = document.getElementById(`qCard_${unanswered[0]}`);
-                firstUnanswered.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                return;
-            }
-
-            // 全問回答済みの場合、結果を表示
-            hideAlert();
-            displayResult(totalScore);
-        }
-
-        // 結果描画
-        function displayResult(score) {
-            const resultArea = document.getElementById('resultArea');
-            const resultTitle = document.getElementById('resultTitle');
-            const resultScore = document.getElementById('resultScore');
-            const resultBadge = document.getElementById('resultBadge');
-            const resultHeaderBg = document.getElementById('resultHeaderBg');
-            const resultDescription = document.getElementById('resultDescription');
-            const resultAdvice = document.getElementById('resultAdvice');
-            const scoreIndicator = document.getElementById('scoreIndicator');
-
-            resultScore.textContent = score;
-
-            // スコア位置計算 (%換算: 13点=0%, 91点=100%)
-            const percent = ((score - 13) / (91 - 13)) * 100;
-
-            if (score >= 65) {
-                // 強いマキシマイザー
-                resultBadge.textContent = "🧬 診断結果";
-                resultTitle.textContent = "強い「追求者（マキシマイザー）」";
-                resultHeaderBg.className = "p-8 text-white text-center relative overflow-hidden bg-gradient-to-r from-indigo-600 to-purple-600";
-                scoreIndicator.className = "h-full transition-all duration-1000 ease-out rounded-full bg-indigo-600";
-
-                resultDescription.innerHTML = `
-                    あなたの追求者（マキシマイザー）度はとても高い傾向にあります。
-                    何事においても徹底的に比較・検討を行い、常に<b>「最高の選択肢」</b>を求めるタイプです。
-                    その妥協しない姿勢により、客観的には「より高い収入の仕事」や「高品質な商品・サービス」を手に入れやすいという強みを持っています。
-                `;
-
-                resultAdvice.innerHTML = `
-                    <b>【マキシマイザーのパラドックス】</b><br>
-                    最高を求めるあまり、「もっと良い選択肢があったのではないか」という後悔（反実仮想）を感じやすく、他者との比較や選択にかかる時間（機会費用）により、<b>客観的に良い結果を得ていても主観的な満足感や幸福感が低くなりやすい</b>傾向があります。<br><br>
-                    💡 <b>アドバイス:</b> 「最高の選択（Best）」ではなく、「自分の基準を満たす十分良い選択（Good enough）」で決定する練習をしてみましょう。選択肢を最初から3つ程度に絞り込むルールを作るのも効果的です。
-                `;
-            } else if (score >= 40) {
-                // 平均的（中間層）
-                resultBadge.textContent = "⚖️ 診断結果";
-                resultTitle.textContent = "平均的（中間バランス型）";
-                resultHeaderBg.className = "p-8 text-white text-center relative overflow-hidden bg-gradient-to-r from-slate-600 to-indigo-600";
-                scoreIndicator.className = "h-full transition-all duration-1000 ease-out rounded-full bg-slate-600";
-
-                resultDescription.innerHTML = `
-                    あなたは追求者（マキシマイザー）と満足者（サティスファイサー）のバランスが取れたタイプです。
-                    状況や対象（例：家や車などの大きな買い物と日常生活の品、仕事と趣味など）によって、こだわり抜く場面と手早く決める場面をバランスよく使い分けています。
-                `;
-
-                resultAdvice.innerHTML = `
-                    <b>【状況に応じた柔軟性】</b><br>
-                    生活の質と意思決定コストのバランスを自然に保てています。<br><br>
-                    💡 <b>アドバイス:</b> 自分にとって「絶対に譲れない重要な領域」と「適当で良い領域」のメリハリを意識的に意識することで、より時間とエネルギーを効率的に使えるようになります。
-                `;
-            } else {
-                // 強いサティスファイサー
-                resultBadge.textContent = "🍏 診断結果";
-                resultTitle.textContent = "強い「満足者（サティスファイサー）」";
-                resultHeaderBg.className = "p-8 text-white text-center relative overflow-hidden bg-gradient-to-r from-emerald-600 to-teal-600";
-                scoreIndicator.className = "h-full transition-all duration-1000 ease-out rounded-full bg-emerald-500";
-
-                resultDescription.innerHTML = `
-                    あなたは強い「満足者（サティスファイサー）」の傾向があります。
-                    「自分の中の一定の基準（これで十分）」を超えた選択肢が見つかれば、それ以上の比較をせずに即決できるタイプです。無意味に他の可能性を追い求めたりしません。
-                `;
-
-                resultAdvice.innerHTML = `
-                    <b>【高い幸福度と決断力】</b><br>
-                    選択にかける時間やストレスが少なく、選んだ後の決断に後悔しにくいため、<b>日々の満足度や主観的幸福度が高い</b>のが大きな特徴です。<br><br>
-                    💡 <b>アドバイス:</b> 素晴らしい意思決定スタイルです。ただし、本当に重要な人生の決断（キャリアや大きな契約など）の場面では、意識的に少しだけ比較の幅を広げてみることで、さらに良い機会に恵まれる場合があります。
-                `;
-            }
-
-            // 結果エリア表示とスクロール
-            resultArea.classList.remove('hidden');
-            setTimeout(() => {
-                scoreIndicator.style.width = `${percent}%`;
-            }, 100);
-
-            resultArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
-        // リセット処理
-        function resetQuiz() {
-            document.getElementById('quizForm').reset();
-            
-            // エラー状態などのクリア
-            const cards = document.querySelectorAll('.q-card');
-            cards.forEach(card => card.classList.remove('unanswered-error'));
-            
-            hideAlert();
-            updateProgress();
-
-            // 結果非表示
-            const resultArea = document.getElementById('resultArea');
-            resultArea.classList.add('hidden');
-            document.getElementById('scoreIndicator').style.width = '0%';
-
-            // 先頭にスクロール
-            document.getElementById('introCard').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        // 結果テキストのコピー機能
-        function copyResultShareText() {
-            const score = document.getElementById('resultScore').textContent;
-            const title = document.getElementById('resultTitle').textContent;
-            
-            const shareText = `【追求者（マキシマイザー）度 診断結果】\n私のスコア: ${score}点 / 91点\n判定: ${title}\n\n#マキシマイザー診断 #心理テスト`;
-
-            // クリップボード書き込み (iframe制約対策Fallback付)
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(shareText).then(showToast).catch(() => fallbackCopy(shareText));
-            } else {
-                fallbackCopy(shareText);
-            }
-        }
-
-        function fallbackCopy(text) {
-            const textArea = document.createElement("textarea");
-            textArea.value = text;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
-            showToast();
-        }
-
-        function showToast() {
-            const toast = document.getElementById('toast');
-            toast.classList.remove('opacity-0', 'pointer-events-none');
-            toast.classList.add('opacity-100');
-            setTimeout(() => {
-                toast.classList.remove('opacity-100');
-                toast.classList.add('opacity-0', 'pointer-events-none');
-            }, 2500);
-        }
-    </script>
 </body>
 </html>
