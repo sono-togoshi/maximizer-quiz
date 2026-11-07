@@ -1,2 +1,2 @@
-# maximizer-quiz
-マキシマイザー診断アプリ
+# Psychological test
+心理テスト
